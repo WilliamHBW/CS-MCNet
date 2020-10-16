@@ -9,9 +9,9 @@ class MCData(data.Dataset):
         datas = [os.path.join(root,data) for data in os.listdir(root)]
         data_num = len(datas)
         if train:
-            self.train_dataset = datas[0:int(0.7*data_num)]
+            self.train_dataset = datas[0:int(0.1*data_num)]
         else:
-            self.train_dataset = datas[int(0.7*data_num):]
+            self.train_dataset = datas[int(0.95*data_num):]
         
     def __getitem__(self,index):
         output = []

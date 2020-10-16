@@ -81,7 +81,7 @@ def train(**kwargs):
             vis.plot('loss','train_loss',loss_meter.value()[0])
             loss_list.append(loss_meter.value()[0])
             model.save(name = save_train_root+"/"+"checkpoints.pth")
-            val(model,val_dataloader,loss_list_val,vis)
+            val(model,val_dataloader,loss_list_val,vis,bernoulli_weights)
             info = str(epoch) + " epoch train loss value is:" + str(loss_meter.value()[0]) + "lr is: " + str(lr) +"\n"
             print(info)
             vis.log("epoch:{epoch},loss:{loss}".format(epoch=epoch,loss=loss_meter.value()[0]))
@@ -108,7 +108,7 @@ def train(**kwargs):
     plt.savefig(save_train_root + "/" + "train_loss.png")
 
 @t.no_grad()
-def val(model,dataloader,loss_list,vis):
+def val(model,dataloader,loss_list,vis,bernoulli_weights):
     model.eval()
     
     criterion = t.nn.MSELoss()

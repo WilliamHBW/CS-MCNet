@@ -29,6 +29,27 @@ class recblock(BasicModule):
         x_1 = self.fc1(input).view(b_s,self.size,self.size).unsqueeze_(1)
         output = self.rec_cnn(x_1).view(b_s,self.size,self.size)
         return output
+      
+class resblock(BasicModule):
+    def __init__(self,cr,size):
+        super(resblock,self).__init__()
+
+        self.cr = cr
+        self.size = size
+        self.fc1 = nn.Linear(int(self.cr*self.size*self.size),self.size*self.size)
+        cnn_layers = OrderedDict()
+        cnn_layers['conv1'] = nn.Conv2d(1,64,1,1,0)
+        cnn_layers['relu1'] = nn.ReLU(inplace=True)
+        cnn_layers['conv2'] = nn.Conv2d(64,32,3,1,1)
+        cnn_layers['relu2'] = nn.ReLU(inplace=True)
+        cnn_layers['conv3'] = nn.Conv2d(32,1,3,1,1)
+        self.rec_cnn = nn.Sequential(cnn_layers)
+
+    def forward(self,input):
+        b_s = input.size(0)
+        x_1 = self.fc1(input).view(b_s,self.size,self.size).unsqueeze_(1)
+        output = self.rec_cnn(x_1).view(b_s,self.size,self.size)
+        return output
 
 class MCblock(BasicModule):
     def __init__(self,m_matrix,cr,blk_size,ref_size):
@@ -39,25 +60,20 @@ class MCblock(BasicModule):
         self.blk_size = blk_size
         self.ref_size = ref_size
         
-        self.rec1 = recblock(self.cr,self.blk_size)
-        self.rec2 = recblock(self.cr,self.blk_size)
+        self.rec = recblock(self.cr,self.blk_size)
+        self.res = resblock(self.cr,self.blk_size)
         self.fc = nn.Linear(self.ref_size*self.ref_size,self.blk_size*self.blk_size)
 
     def forward(self,input,ref,y):
         b_s = input.size(0)
-        x_1 = self.rec1(input)
+        x_1 = self.rec(input)
         x_mc = self.fc(ref.view(b_s,self.ref_size*self.ref_size)).view(b_s,self.blk_size,self.blk_size)
-        x_2 = ((x_mc+x_1)/2)
-        x_3 = x_2.view(b_s,self.blk_size*self.blk_size).unsqueeze_(2)
+        x_2 = x_mc.view(b_s,self.blk_size*self.blk_size).unsqueeze_(2)
         weight = self.m.repeat(b_s,1,1)
-        y_mc = t.bmm(weight,x_3).squeeze_(2)
+        y_mc = t.bmm(weight,x_2).squeeze_(2)
         y_r = y_mc-y
-        output = self.rec2(y_r)+x_2
+        output = self.res(y_r)+x_1
         return output,x_mc
-    
-    def pre_load(self,load_path):
-        self.rec1.load(load_path)
-        self.rec2.load(load_path)
     
 class MCNet(BasicModule):
     def __init__(self,m_matrix,cr,blk_size,ref_size):
