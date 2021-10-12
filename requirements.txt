@@ -29,7 +29,7 @@ mkl-service==2.3.0
 networkx==2.4
 numpy==1.18.1
 opencv-contrib-python==4.1.2.30
-opencv-python==3.4.2.16
+opencv-python==4.2.0.32
 packaging==20.3
 pandas==0.25.3
 parso==0.6.2
