@@ -27,7 +27,7 @@ mkl-fft==1.0.15
 mkl-random==1.1.1
 mkl-service==2.3.0
 networkx==2.4
-numpy==1.18.1
+numpy==1.22.0
 opencv-contrib-python==4.1.2.30
 opencv-python==3.4.2.16
 packaging==20.3
